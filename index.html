@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Overlay Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #0a0a0a;
+            color: #ededed;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #22c55e;
+        }
+
+        .subtitle {
+            color: #a1a1aa;
+            margin-bottom: 2rem;
+        }
+
+        .controls {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #e4e4e7;
+        }
+
+        input[type="number"] {
+            background-color: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            color: #ededed;
+            font-size: 0.875rem;
+            width: 100px;
+            transition: all 0.2s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn, .reset-btn {
+            background-color: #22c55e;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-btn:hover {
+            background-color: #16a34a;
+        }
+
+        .reset-btn {
+            background-color: #3f3f46;
+            color: #ededed;
+        }
+
+        .reset-btn:hover {
+            background-color: #52525b;
+        }
+
+        .canvas-container {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas {
+            max-width: 100%;
+            cursor: default;
+            border-radius: 0.375rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #71717a;
+        }
+
+        .placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .info {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: #a1a1aa;
+        }
+
+        .info strong {
+            color: #22c55e;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #27272a;
+            color: #71717a;
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: #22c55e;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        footer a:hover {
+            color: #16a34a;
+        }
+
+        .gallery-section {
+            margin-top: 2rem;
+        }
+
+        .gallery-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #e4e4e7;
+            margin-bottom: 1rem;
+        }
+
+        .gallery-container {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            min-height: 120px;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .gallery-empty {
+            color: #71717a;
+            font-size: 0.875rem;
+            width: 100%;
+        }
+
+        .gallery-item {
+            position: relative;
+            cursor: pointer;
+            border-radius: 0.375rem;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 2px #22c55e;
+            border-color: #22c55e;
+        }
+
+        .gallery-item img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-item-delete {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #ff6b6b;
+            border: none;
+            border-radius: 0.25rem;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .gallery-item:hover .gallery-item-delete {
+            opacity: 1;
+        }
+
+        .gallery-item-delete:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .gallery-clear-btn {
+            background-color: #3f3f46;
+            color: #ededed;
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .gallery-clear-btn:hover {
+            background-color: #52525b;
+        }
+
+        .color-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        input[type="color"] {
+            background-color: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 0.375rem;
+            width: 60px;
+            height: 38px;
+            cursor: pointer;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 4px;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 0.25rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #3f3f46;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #ededed;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #22c55e;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Grid Overlay Tool</h1>
+        <p class="subtitle">Upload an image and overlay a customizable grid</p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="fileInput">Upload Image</label>
+                <input type="file" id="fileInput" accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Choose Image
+                </button>
+            </div>
+
+            <div class="control-group">
+                <label for="columns">Columns</label>
+                <input type="number" id="columns" min="1" max="50" value="3">
+            </div>
+
+            <div class="control-group">
+                <label for="rows">Rows</label>
+                <input type="number" id="rows" min="1" max="50" value="3">
+            </div>
+
+            <div class="control-group">
+                <label for="gridColor">Grid Color</label>
+                <div class="color-picker-group">
+                    <input type="color" id="gridColor" value="#22c55e">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="lineWidth">Line Width</label>
+                <input type="number" id="lineWidth" min="1" max="10" value="2">
+            </div>
+
+            <div class="control-group">
+                <label for="fixedCells">Fixed Cells</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="fixedCells" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button class="reset-btn" onclick="resetGrid()">Reset Position</button>
+            </div>
+        </div>
+
+        <div class="canvas-container" id="canvasContainer">
+            <div class="placeholder" id="placeholder">
+                <div class="placeholder-icon">📐</div>
+                <p>Upload an image to get started</p>
+            </div>
+            <canvas id="canvas" style="display: none;"></canvas>
+        </div>
+
+        <div class="info">
+            <strong>Instructions:</strong> Upload an image, adjust the number of rows and columns. Drag the grid to move it, or drag the green handles to resize it.
+            With "Fixed Cells" enabled (default), the grid is always square with square cells. Disable it for dynamic rectangular grids with flexible cell sizes.
+        </div>
+
+        <div class="gallery-section">
+            <div class="gallery-title">Previous Images</div>
+            <div class="gallery-container" id="galleryContainer">
+                <div class="gallery-empty">No images saved yet</div>
+            </div>
+        </div>
+
+        <footer>
+            Made with love for Karlie ❤️. Don't stress out hon, it's JUST technology.
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const fileInput = document.getElementById('fileInput');
+        const columnsInput = document.getElementById('columns');
+        const rowsInput = document.getElementById('rows');
+        const gridColorInput = document.getElementById('gridColor');
+        const lineWidthInput = document.getElementById('lineWidth');
+        const fixedCellsInput = document.getElementById('fixedCells');
+        const placeholder = document.getElementById('placeholder');
+
+        let image = null;
+        let grid = {
+            x: 50,
+            y: 50,
+            width: 300,
+            height: 300
+        };
+
+        let isDragging = false;
+        let isResizing = false;
+        let resizeHandle = null;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let handleSize = 8;
+        const MAX_STORED_IMAGES = 10;
+
+        // Gallery functions
+        function saveImageToGallery(dataUrl) {
+            try {
+                let gallery = JSON.parse(localStorage.getItem('gridGallery') || '[]');
+                const newImage = {
+                    id: Date.now(),
+                    data: dataUrl,
+                    timestamp: new Date().toLocaleString()
+                };
+                gallery.unshift(newImage);
+                if (gallery.length > MAX_STORED_IMAGES) {
+                    gallery = gallery.slice(0, MAX_STORED_IMAGES);
+                }
+                localStorage.setItem('gridGallery', JSON.stringify(gallery));
+                renderGallery();
+            } catch (e) {
+                console.error('Failed to save image:', e);
+            }
+        }
+
+        function renderGallery() {
+            try {
+                const gallery = JSON.parse(localStorage.getItem('gridGallery') || '[]');
+                const container = document.getElementById('galleryContainer');
+
+                if (gallery.length === 0) {
+                    container.innerHTML = '<div class="gallery-empty">No images saved yet</div>';
+                    return;
+                }
+
+                container.innerHTML = gallery.map(img => `
+                    <div class="gallery-item" onclick="loadImageFromGallery(${img.id})">
+                        <img src="${img.data}" alt="Saved image">
+                        <button class="gallery-item-delete" onclick="deleteImageFromGallery(event, ${img.id})">×</button>
+                    </div>
+                `).join('') + '<button class="gallery-clear-btn" onclick="clearAllGallery()">Clear All</button>';
+            } catch (e) {
+                console.error('Failed to render gallery:', e);
+            }
+        }
+
+        function loadImageFromGallery(id) {
+            try {
+                const gallery = JSON.parse(localStorage.getItem('gridGallery') || '[]');
+                const imgData = gallery.find(img => img.id === id);
+                if (imgData) {
+                    image = new Image();
+                    image.onload = () => {
+                        setupCanvas();
+                        placeholder.style.display = 'none';
+                        canvas.style.display = 'block';
+                        drawImage();
+                    };
+                    image.src = imgData.data;
+                }
+            } catch (e) {
+                console.error('Failed to load image:', e);
+            }
+        }
+
+        function deleteImageFromGallery(event, id) {
+            event.stopPropagation();
+            try {
+                let gallery = JSON.parse(localStorage.getItem('gridGallery') || '[]');
+                gallery = gallery.filter(img => img.id !== id);
+                localStorage.setItem('gridGallery', JSON.stringify(gallery));
+                renderGallery();
+            } catch (e) {
+                console.error('Failed to delete image:', e);
+            }
+        }
+
+        function clearAllGallery() {
+            if (confirm('Are you sure you want to clear all saved images?')) {
+                try {
+                    localStorage.removeItem('gridGallery');
+                    renderGallery();
+                } catch (e) {
+                    console.error('Failed to clear gallery:', e);
+                }
+            }
+        }
+
+        // Load image
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const dataUrl = event.target.result;
+                    image = new Image();
+                    image.onload = () => {
+                        setupCanvas();
+                        placeholder.style.display = 'none';
+                        canvas.style.display = 'block';
+                        drawImage();
+                        saveImageToGallery(dataUrl);
+                    };
+                    image.src = dataUrl;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Setup canvas size
+        function setupCanvas() {
+            const maxWidth = 1200;
+            const maxHeight = 800;
+            let width = image.width;
+            let height = image.height;
+
+            // Scale down if image is too large
+            if (width > maxWidth || height > maxHeight) {
+                const ratio = Math.min(maxWidth / width, maxHeight / height);
+                width *= ratio;
+                height *= ratio;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Initialize grid in center as square
+            const size = Math.min(300, width * 0.6, height * 0.6);
+            grid.width = size;
+            grid.height = size;
+            grid.x = (width - grid.width) / 2;
+            grid.y = (height - grid.height) / 2;
+        }
+
+        // Draw image and grid
+        function drawImage() {
+            if (!image) return;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw image
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            drawGrid();
+
+            // Draw resize handles
+            drawHandles();
+        }
+
+        // Make grid square if fixed cells is enabled
+        function enforceGridConstraints() {
+            const fixedCells = fixedCellsInput.checked;
+
+            if (fixedCells) {
+                // Make grid square
+                const size = Math.min(grid.width, grid.height);
+                const centerX = grid.x + grid.width / 2;
+                const centerY = grid.y + grid.height / 2;
+                grid.width = size;
+                grid.height = size;
+                grid.x = centerX - size / 2;
+                grid.y = centerY - size / 2;
+            }
+
+            constrainGrid();
+        }
+
+        // Draw grid overlay
+        function drawGrid() {
+            const columns = parseInt(columnsInput.value) || 3;
+            const rows = parseInt(rowsInput.value) || 3;
+            const color = gridColorInput.value;
+            const lineWidth = parseInt(lineWidthInput.value) || 2;
+
+            // Calculate cell size based on grid dimensions
+            const cellWidth = grid.width / columns;
+            const cellHeight = grid.height / rows;
+
+            // Draw grid border
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth + 1;
+            ctx.strokeRect(grid.x, grid.y, grid.width, grid.height);
+
+            // Draw grid lines
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+
+            // Draw vertical lines
+            for (let i = 1; i < columns; i++) {
+                const x = grid.x + (i * cellWidth);
+                ctx.beginPath();
+                ctx.moveTo(x, grid.y);
+                ctx.lineTo(x, grid.y + grid.height);
+                ctx.stroke();
+            }
+
+            // Draw horizontal lines
+            for (let i = 1; i < rows; i++) {
+                const y = grid.y + (i * cellHeight);
+                ctx.beginPath();
+                ctx.moveTo(grid.x, y);
+                ctx.lineTo(grid.x + grid.width, y);
+                ctx.stroke();
+            }
+        }
+
+        // Draw resize handles
+        function drawHandles() {
+            ctx.fillStyle = '#22c55e';
+            ctx.strokeStyle = '#0a0a0a';
+            ctx.lineWidth = 2;
+
+            const handles = getHandles();
+            for (let handle of handles) {
+                ctx.fillRect(handle.x - handleSize/2, handle.y - handleSize/2, handleSize, handleSize);
+                ctx.strokeRect(handle.x - handleSize/2, handle.y - handleSize/2, handleSize, handleSize);
+            }
+        }
+
+        // Get handle positions
+        function getHandles() {
+            return [
+                { x: grid.x, y: grid.y, cursor: 'nw-resize', type: 'nw' },
+                { x: grid.x + grid.width/2, y: grid.y, cursor: 'n-resize', type: 'n' },
+                { x: grid.x + grid.width, y: grid.y, cursor: 'ne-resize', type: 'ne' },
+                { x: grid.x, y: grid.y + grid.height/2, cursor: 'w-resize', type: 'w' },
+                { x: grid.x + grid.width, y: grid.y + grid.height/2, cursor: 'e-resize', type: 'e' },
+                { x: grid.x, y: grid.y + grid.height, cursor: 'sw-resize', type: 'sw' },
+                { x: grid.x + grid.width/2, y: grid.y + grid.height, cursor: 's-resize', type: 's' },
+                { x: grid.x + grid.width, y: grid.y + grid.height, cursor: 'se-resize', type: 'se' }
+            ];
+        }
+
+        // Get handle at position
+        function getHandleAtPosition(x, y) {
+            const handles = getHandles();
+            for (let handle of handles) {
+                const distance = Math.sqrt(Math.pow(x - handle.x, 2) + Math.pow(y - handle.y, 2));
+                if (distance < handleSize * 2) {
+                    return handle;
+                }
+            }
+            return null;
+        }
+
+        // Check if point is inside grid
+        function isInsideGrid(x, y) {
+            return x >= grid.x && x <= grid.x + grid.width &&
+                   y >= grid.y && y <= grid.y + grid.height;
+        }
+
+        // Constrain grid to canvas bounds
+        function constrainGrid() {
+            if (grid.x < 0) grid.x = 0;
+            if (grid.y < 0) grid.y = 0;
+            if (grid.x + grid.width > canvas.width) grid.x = canvas.width - grid.width;
+            if (grid.y + grid.height > canvas.height) grid.y = canvas.height - grid.height;
+            if (grid.width < 50) grid.width = 50;
+            if (grid.height < 50) grid.height = 50;
+            if (grid.x + grid.width > canvas.width) grid.width = canvas.width - grid.x;
+            if (grid.y + grid.height > canvas.height) grid.height = canvas.height - grid.y;
+        }
+
+        // Mouse event handlers
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const handle = getHandleAtPosition(x, y);
+            if (handle) {
+                isResizing = true;
+                resizeHandle = handle;
+                dragStartX = x;
+                dragStartY = y;
+            } else if (isInsideGrid(x, y)) {
+                isDragging = true;
+                dragStartX = x - grid.x;
+                dragStartY = y - grid.y;
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (isResizing && resizeHandle) {
+                const deltaX = x - dragStartX;
+                const deltaY = y - dragStartY;
+                const fixedCells = fixedCellsInput.checked;
+
+                if (fixedCells) {
+                    // Maintain square aspect ratio
+                    const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY)) * (deltaX + deltaY > 0 ? 1 : -1);
+
+                    switch(resizeHandle.type) {
+                        case 'nw':
+                        case 'ne':
+                        case 'sw':
+                        case 'se':
+                            // Corner handles - use larger delta
+                            const cornerDelta = (resizeHandle.type === 'nw' || resizeHandle.type === 'sw') ? -delta : delta;
+                            if (resizeHandle.type === 'nw' || resizeHandle.type === 'ne') {
+                                grid.y -= cornerDelta;
+                                grid.height += cornerDelta;
+                            } else {
+                                grid.height += cornerDelta;
+                            }
+                            if (resizeHandle.type === 'nw' || resizeHandle.type === 'sw') {
+                                grid.x -= cornerDelta;
+                                grid.width += cornerDelta;
+                            } else {
+                                grid.width += cornerDelta;
+                            }
+                            break;
+                        case 'n':
+                        case 's':
+                            // Top/bottom handles
+                            const vDelta = resizeHandle.type === 'n' ? -deltaY : deltaY;
+                            const centerX = grid.x + grid.width / 2;
+                            grid.height += vDelta;
+                            grid.width = grid.height;
+                            grid.x = centerX - grid.width / 2;
+                            if (resizeHandle.type === 'n') {
+                                grid.y -= vDelta;
+                            }
+                            break;
+                        case 'w':
+                        case 'e':
+                            // Left/right handles
+                            const hDelta = resizeHandle.type === 'w' ? -deltaX : deltaX;
+                            const centerY = grid.y + grid.height / 2;
+                            grid.width += hDelta;
+                            grid.height = grid.width;
+                            grid.y = centerY - grid.height / 2;
+                            if (resizeHandle.type === 'w') {
+                                grid.x -= hDelta;
+                            }
+                            break;
+                    }
+                } else {
+                    // Dynamic resize - free form
+                    switch(resizeHandle.type) {
+                        case 'nw':
+                            grid.x += deltaX;
+                            grid.y += deltaY;
+                            grid.width -= deltaX;
+                            grid.height -= deltaY;
+                            break;
+                        case 'n':
+                            grid.y += deltaY;
+                            grid.height -= deltaY;
+                            break;
+                        case 'ne':
+                            grid.y += deltaY;
+                            grid.width += deltaX;
+                            grid.height -= deltaY;
+                            break;
+                        case 'w':
+                            grid.x += deltaX;
+                            grid.width -= deltaX;
+                            break;
+                        case 'e':
+                            grid.width += deltaX;
+                            break;
+                        case 'sw':
+                            grid.x += deltaX;
+                            grid.width -= deltaX;
+                            grid.height += deltaY;
+                            break;
+                        case 's':
+                            grid.height += deltaY;
+                            break;
+                        case 'se':
+                            grid.width += deltaX;
+                            grid.height += deltaY;
+                            break;
+                    }
+                }
+
+                constrainGrid();
+                dragStartX = x;
+                dragStartY = y;
+                drawImage();
+            } else if (isDragging) {
+                grid.x = x - dragStartX;
+                grid.y = y - dragStartY;
+                constrainGrid();
+                drawImage();
+            } else {
+                // Update cursor
+                const handle = getHandleAtPosition(x, y);
+                if (handle) {
+                    canvas.style.cursor = handle.cursor;
+                } else if (isInsideGrid(x, y)) {
+                    canvas.style.cursor = 'move';
+                } else {
+                    canvas.style.cursor = 'default';
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            isResizing = false;
+            resizeHandle = null;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            isResizing = false;
+            resizeHandle = null;
+            canvas.style.cursor = 'default';
+        });
+
+        // Touch event handlers for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+
+            const handle = getHandleAtPosition(x, y);
+            if (handle) {
+                isResizing = true;
+                resizeHandle = handle;
+                dragStartX = x;
+                dragStartY = y;
+            } else if (isInsideGrid(x, y)) {
+                isDragging = true;
+                dragStartX = x - grid.x;
+                dragStartY = y - grid.y;
+            }
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+
+            if (isResizing && resizeHandle) {
+                const deltaX = x - dragStartX;
+                const deltaY = y - dragStartY;
+                const fixedCells = fixedCellsInput.checked;
+
+                if (fixedCells) {
+                    // Maintain square aspect ratio
+                    const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY)) * (deltaX + deltaY > 0 ? 1 : -1);
+
+                    switch(resizeHandle.type) {
+                        case 'nw':
+                        case 'ne':
+                        case 'sw':
+                        case 'se':
+                            const cornerDelta = (resizeHandle.type === 'nw' || resizeHandle.type === 'sw') ? -delta : delta;
+                            if (resizeHandle.type === 'nw' || resizeHandle.type === 'ne') {
+                                grid.y -= cornerDelta;
+                                grid.height += cornerDelta;
+                            } else {
+                                grid.height += cornerDelta;
+                            }
+                            if (resizeHandle.type === 'nw' || resizeHandle.type === 'sw') {
+                                grid.x -= cornerDelta;
+                                grid.width += cornerDelta;
+                            } else {
+                                grid.width += cornerDelta;
+                            }
+                            break;
+                        case 'n':
+                        case 's':
+                            const vDelta = resizeHandle.type === 'n' ? -deltaY : deltaY;
+                            const centerX = grid.x + grid.width / 2;
+                            grid.height += vDelta;
+                            grid.width = grid.height;
+                            grid.x = centerX - grid.width / 2;
+                            if (resizeHandle.type === 'n') {
+                                grid.y -= vDelta;
+                            }
+                            break;
+                        case 'w':
+                        case 'e':
+                            const hDelta = resizeHandle.type === 'w' ? -deltaX : deltaX;
+                            const centerY = grid.y + grid.height / 2;
+                            grid.width += hDelta;
+                            grid.height = grid.width;
+                            grid.y = centerY - grid.height / 2;
+                            if (resizeHandle.type === 'w') {
+                                grid.x -= hDelta;
+                            }
+                            break;
+                    }
+                } else {
+                    // Dynamic resize - free form
+                    switch(resizeHandle.type) {
+                        case 'nw':
+                            grid.x += deltaX;
+                            grid.y += deltaY;
+                            grid.width -= deltaX;
+                            grid.height -= deltaY;
+                            break;
+                        case 'n':
+                            grid.y += deltaY;
+                            grid.height -= deltaY;
+                            break;
+                        case 'ne':
+                            grid.y += deltaY;
+                            grid.width += deltaX;
+                            grid.height -= deltaY;
+                            break;
+                        case 'w':
+                            grid.x += deltaX;
+                            grid.width -= deltaX;
+                            break;
+                        case 'e':
+                            grid.width += deltaX;
+                            break;
+                        case 'sw':
+                            grid.x += deltaX;
+                            grid.width -= deltaX;
+                            grid.height += deltaY;
+                            break;
+                        case 's':
+                            grid.height += deltaY;
+                            break;
+                        case 'se':
+                            grid.width += deltaX;
+                            grid.height += deltaY;
+                            break;
+                    }
+                }
+
+                constrainGrid();
+                dragStartX = x;
+                dragStartY = y;
+                drawImage();
+            } else if (isDragging) {
+                grid.x = x - dragStartX;
+                grid.y = y - dragStartY;
+                constrainGrid();
+                drawImage();
+            }
+        });
+
+        canvas.addEventListener('touchend', () => {
+            isDragging = false;
+            isResizing = false;
+            resizeHandle = null;
+        });
+
+        // Update grid when inputs change
+        columnsInput.addEventListener('input', drawImage);
+        rowsInput.addEventListener('input', drawImage);
+        gridColorInput.addEventListener('input', drawImage);
+        lineWidthInput.addEventListener('input', drawImage);
+        fixedCellsInput.addEventListener('change', () => {
+            enforceGridConstraints();
+            drawImage();
+        });
+
+        // Reset grid position and size
+        function resetGrid() {
+            if (image) {
+                grid.width = Math.min(300, canvas.width * 0.6);
+                grid.height = Math.min(300, canvas.height * 0.6);
+                grid.x = (canvas.width - grid.width) / 2;
+                grid.y = (canvas.height - grid.height) / 2;
+                drawImage();
+            }
+        }
+
+        // Initialize gallery on page load
+        renderGallery();
+    </script>
+</body>
+</html>
