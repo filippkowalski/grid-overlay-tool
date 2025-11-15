@@ -346,7 +346,7 @@
             <div class="control-group">
                 <label for="fileInput">Upload Image</label>
                 <input type="file" id="fileInput" accept="image/*">
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                <button class="upload-btn" id="uploadBtn">
                     Choose Image
                 </button>
             </div>
@@ -416,6 +416,7 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
         const columnsInput = document.getElementById('columns');
         const rowsInput = document.getElementById('rows');
         const gridColorInput = document.getElementById('gridColor');
@@ -521,6 +522,18 @@
                 }
             }
         }
+
+        // Upload button click handler
+        uploadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            fileInput.click();
+        });
+
+        // Handle file input change
+        // Also handle click on the hidden file input for direct interaction
+        fileInput.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
 
         // Load image
         fileInput.addEventListener('change', (e) => {
